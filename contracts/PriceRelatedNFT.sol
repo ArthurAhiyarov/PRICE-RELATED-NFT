@@ -45,6 +45,28 @@ contract PriceRelatedNFT is ERC721Enumerable, Ownable {
         cost = _cost;
     }
 
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override priceLevel(tokenId) {
+        //solhint-disable-next-line max-line-length
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            'ERC721: caller is not token owner or approved'
+        );
+
+        _transfer(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override priceLevel(tokenId) {
+        safeTransferFrom(from, to, tokenId, '');
+    }
+
     function mintNFT(uint256 _mintAmount) public payable returns (uint256) {
         require(!paused);
         require(_mintAmount > 0);
