@@ -3,6 +3,7 @@ pragma solidity ^0.8.8;
 
 import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import '../interfaces/IERC721NFTMarketV1.sol';
 
 contract PriceRelatedNFT is ERC721Enumerable, Ownable {
     uint256 public priceLimit;
@@ -16,22 +17,19 @@ contract PriceRelatedNFT is ERC721Enumerable, Ownable {
     address private ERC721NFTMarketV1addr =
         0x17539cCa21C7933Df5c980172d22659B8C345C5A;
 
-    // form ERC721NFTMarketV1 contract
-    struct Ask {
-        address seller; // address of the seller
-        uint256 price; // price of the token
-    }
-
     modifier priceLevel(uint256 tokenId) {
-        ERC721NFTMarketV1 nftMarket = ERC721NFTMarketV1(ERC721NFTMarketV1addr);
+        IERC721NFTMarketV1 nftMarket = IERC721NFTMarketV1(
+            ERC721NFTMarketV1addr
+        );
         uint256[] memory tokenIds = new uint256[](1);
         tokenIds[0] = tokenId;
-        askInfo = new Ask[](1);
+        AskLib.Ask[] memory askInfo = new AskLib.Ask[](1);
         (, askInfo) = nftMarket.viewAsksByCollectionAndTokenIds(
             address(this),
             tokenIds
         );
         require(askInfo[0].price > priceLimit);
+        _;
     }
 
     constructor(
@@ -107,7 +105,7 @@ contract PriceRelatedNFT is ERC721Enumerable, Ownable {
 
     function withdraw() external payable onlyOwner {
         uint256 bal = address(this).balance;
-        (bool os, ) = payable(owner()).call{ value: address(this).balance }('');
+        (bool os, ) = payable(owner()).call{ value: bal }('');
         require(os);
     }
 }
