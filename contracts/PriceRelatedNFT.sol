@@ -7,7 +7,7 @@ import '../interfaces/IERC721NFTMarketV1.sol';
 
 contract PriceRelatedNFT is ERC721Enumerable, Ownable {
     uint256 public priceLimit;
-    uint256 public s_tokenCounter;
+    uint256 private s_tokenCounter;
     uint256 public maxMintAmount;
     uint256 public maxSupply;
     uint256 public cost;
@@ -45,20 +45,22 @@ contract PriceRelatedNFT is ERC721Enumerable, Ownable {
         cost = _cost;
     }
 
-    function mint(uint256 _mintAmount) public payable {
-        uint256 supply = totalSupply();
+    function mintNFT(uint256 _mintAmount) public payable returns (uint256) {
         require(!paused);
         require(_mintAmount > 0);
         require(_mintAmount <= maxMintAmount);
-        require(supply + _mintAmount <= maxSupply);
+        require(s_tokenCounter + _mintAmount <= maxSupply);
 
         if (msg.sender != owner()) {
             require(msg.value >= cost * _mintAmount);
         }
 
         for (uint256 i = 1; i <= _mintAmount; i++) {
-            _safeMint(msg.sender, supply + i);
+            _safeMint(msg.sender, s_tokenCounter + i);
+            s_tokenCounter = s_tokenCounter + 1;
         }
+
+        return s_tokenCounter;
     }
 
     function setCost(uint256 _newCost)
@@ -107,5 +109,9 @@ contract PriceRelatedNFT is ERC721Enumerable, Ownable {
         uint256 bal = address(this).balance;
         (bool os, ) = payable(owner()).call{ value: bal }('');
         require(os);
+    }
+
+    function getTokenCounter() public view returns (uint256) {
+        return s_tokenCounter;
     }
 }
