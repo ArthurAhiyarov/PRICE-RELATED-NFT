@@ -28,7 +28,7 @@ contract PriceRelatedNFT is ERC721Enumerable, Ownable {
             address(this),
             tokenIds
         );
-        require(askInfo[0].price > priceLimit);
+        require(askInfo[0].price > priceLimit, 'NFT price is not high enough');
         _;
     }
 
